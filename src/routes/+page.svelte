@@ -1,55 +1,7 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { resolve } from '$app/paths';
-
-    let x = 0;
-    let y = 0;
-    let dragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-    let container: HTMLDivElement;
-    let windowEl: HTMLDivElement;
-    let minimized = false;
-    let ready = false;
-
-    onMount(() => {
-        x = (container.clientWidth - windowEl.offsetWidth) / 2;
-        y = (container.clientHeight - windowEl.offsetHeight) / 2;
-        ready = true;
-    });
-
-    function minimize() {
-        minimized = true;
-        y = container.clientHeight - windowEl.querySelector('.title-bar')!.offsetHeight;
-    }
-
-    function maximize() {
-        minimized = false;
-        x = (container.clientWidth - windowEl.offsetWidth) / 2;
-        y = (container.clientHeight - windowEl.offsetHeight) / 2;
-    }
-
-    function startDrag(e: MouseEvent | TouchEvent) {
-        dragging = true;
-        const point = 'touches' in e ? e.touches[0] : e;
-        offsetX = point.clientX - x;
-        offsetY = point.clientY - y;
-    }
-
-    function onMove(e: MouseEvent | TouchEvent) {
-        if (dragging) {
-            const point = 'touches' in e ? e.touches[0] : e;
-            x = point.clientX - offsetX;
-            if (!minimized) {
-                y = point.clientY - offsetY;
-            }
-        }
-    }
-
-    function stopDrag() {
-        dragging = false;
-    }
+    import Window from '$lib/components/Window.svelte';
 
     function close() {
         goto(resolve('/bsod'));
@@ -63,13 +15,7 @@
     }
 </script>
 
-<svelte:window
-    onmousemove={onMove}
-    onmouseup={stopDrag}
-    ontouchmove={onMove}
-    ontouchend={stopDrag}
-    onkeydown={onKeyDown}
-/>
+<svelte:window onkeydown={onKeyDown} />
 
 <div style="height: 100%; width: 100%; overflow: hidden; position: relative;">
     <div class="sidebar">
@@ -97,41 +43,28 @@
             </li>
         </ul>
     </div>
-    <div
-        bind:this={container}
-        style="height: 100%; width: 100%; position: relative; overflow: hidden;"
-    >
-        <div
-            bind:this={windowEl}
-            class="window"
-            class:minimized
-            class:ready
-            style="width: 500px; max-width: 80%; top: {y}px; left: {x}px; position: absolute;"
-        >
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div
-                class="title-bar"
-                onmousedown={startDrag}
-                ontouchstart={startDrag}
-                style="cursor: grab;"
-            >
-                <div class="title-bar-text">Giovanni Feltrin</div>
-                <div class="title-bar-controls">
-                    <button aria-label="Minimize" onclick={minimize}></button>
-                    <button aria-label="Maximize" onclick={maximize}></button>
-                    <button aria-label="Close" onclick={close}></button>
-                </div>
-            </div>
-            <div class="window-body">
-                <p>Currently building.</p>
-            </div>
-            <div class="status-bar">
-                <p class="status-bar-field">Press F1 for help</p>
-                <p class="status-bar-field">Paragraph 1</p>
-                <p class="status-bar-field">Grind: 104%</p>
-            </div>
+    <Window title="Giovanni Feltrin" onclose={close}>
+        <div class="window-body">
+            <p>Currently building.</p>
         </div>
-    </div>
+        <div class="status-bar">
+            <p class="status-bar-field">Press F1 for help</p>
+            <p class="status-bar-field">Paragraph 1</p>
+            <p class="status-bar-field">Grind: 104%</p>
+        </div>
+    </Window>
+    <Window title="Contacts" onclose={close} width="300px" position="bottom-right">
+        <div class="window-body">
+            <ul class="tree-view">
+                <li>
+                    <a href="https://www.linkedin.com/in/feltrin-giovanni/" target="_blank">
+                        LinkedIn
+                    </a>
+                </li>
+                <li><a href="https://github.com/gioppix/" target="_blank"> GitHub </a></li>
+            </ul>
+        </div>
+    </Window>
 </div>
 
 <style>
@@ -143,19 +76,6 @@
         padding: 10px;
         height: 100%;
         background: inherit;
-    }
-
-    .window {
-        visibility: hidden;
-    }
-
-    .window.ready {
-        visibility: visible;
-    }
-
-    .window.minimized .window-body,
-    .window.minimized .status-bar {
-        display: none;
     }
 
     .tree-view {
