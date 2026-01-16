@@ -30,17 +30,19 @@
         y = (container.clientHeight - windowEl.offsetHeight) / 2;
     }
 
-    function startDrag(e: MouseEvent) {
+    function startDrag(e: MouseEvent | TouchEvent) {
         dragging = true;
-        offsetX = e.clientX - x;
-        offsetY = e.clientY - y;
+        const point = 'touches' in e ? e.touches[0] : e;
+        offsetX = point.clientX - x;
+        offsetY = point.clientY - y;
     }
 
-    function onMouseMove(e: MouseEvent) {
+    function onMove(e: MouseEvent | TouchEvent) {
         if (dragging) {
-            x = e.clientX - offsetX;
+            const point = 'touches' in e ? e.touches[0] : e;
+            x = point.clientX - offsetX;
             if (!minimized) {
-                y = e.clientY - offsetY;
+                y = point.clientY - offsetY;
             }
         }
     }
@@ -61,7 +63,13 @@
     }
 </script>
 
-<svelte:window onmousemove={onMouseMove} onmouseup={stopDrag} onkeydown={onKeyDown} />
+<svelte:window
+    onmousemove={onMove}
+    onmouseup={stopDrag}
+    ontouchmove={onMove}
+    ontouchend={stopDrag}
+    onkeydown={onKeyDown}
+/>
 
 <div style="height: 100%; width: 100%; overflow: hidden; position: relative;">
     <div class="sidebar">
@@ -98,10 +106,15 @@
             class="window"
             class:minimized
             class:ready
-            style="width: 500px; top: {y}px; left: {x}px; position: absolute;"
+            style="width: 500px; max-width: 80%; top: {y}px; left: {x}px; position: absolute;"
         >
             <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div class="title-bar" onmousedown={startDrag} style="cursor: grab;">
+            <div
+                class="title-bar"
+                onmousedown={startDrag}
+                ontouchstart={startDrag}
+                style="cursor: grab;"
+            >
                 <div class="title-bar-text">Giovanni Feltrin</div>
                 <div class="title-bar-controls">
                     <button aria-label="Minimize" onclick={minimize}></button>
