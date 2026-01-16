@@ -39,7 +39,7 @@
         font-family: 'Lucida Console', 'Courier New', monospace;
         font-size: 16px;
         padding: 10px;
-        overflow: hidden;
+        overflow: auto;
     }
 
     .content {
