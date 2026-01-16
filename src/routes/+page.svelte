@@ -157,4 +157,8 @@
     .window.minimized .status-bar {
         display: none;
     }
+
+    .tree-view {
+        min-width: 150px;
+    }
 </style>
